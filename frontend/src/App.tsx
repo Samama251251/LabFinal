@@ -1,37 +1,22 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useState } from 'react'
 import './App.css'
-
+import Login from './pages/Login'
+import Signup from './pages/Signup'
 function App() {
-  const [count, setCount] = useState(0)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [userRole, setUserRole] = useState<'admin' | 'user' | null>(null)
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-base-200">
-      <div className="card w-96 bg-base-100 shadow-xl">
-        <div className="card-body items-center text-center">
-          <h2 className="card-title text-4xl font-bold mb-4">Counter</h2>
-          <p className="text-6xl font-bold text-primary mb-6">{count}</p>
-          <div className="card-actions justify-center gap-4">
-            <button 
-              className="btn btn-primary btn-lg" 
-              onClick={() => setCount(count + 1)}
-            >
-              Increment
-            </button>
-            <button 
-              className="btn btn-secondary btn-lg" 
-              onClick={() => setCount(count - 1)}
-            >
-              Decrement
-            </button>
-            <button 
-              className="btn btn-accent btn-lg" 
-              onClick={() => setCount(0)}
-            >
-              Reset
-            </button>
-          </div>
-        </div>
+    <Router>
+      <div className="min-h-screen bg-base-200">
+        <Routes>
+          <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />} />
+          <Route path="/signup" element={<Signup setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
+        </Routes>
       </div>
-    </div>
+    </Router>
   )
 }
 
