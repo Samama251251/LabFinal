@@ -13,7 +13,7 @@ const generateToken = (userId) => {
 // @access  Public
 const signup = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     // Check if user exists
     const userExists = await User.findOne({ email });
@@ -24,11 +24,12 @@ const signup = async (req, res) => {
       });
     }
 
-    // Create user
+    // Create user with optional role (defaults to 'user' in the model)
     const user = await User.create({
       name,
       email,
-      password
+      password,
+      role: role === 'admin' ? 'admin' : 'user' // Only allow 'admin' or 'user'
     });
 
     if (user) {

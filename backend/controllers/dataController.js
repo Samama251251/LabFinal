@@ -56,14 +56,6 @@ exports.getDataByDeviceId = async (req, res) => {
  */
 exports.createData = async (req, res) => {
   try {
-    // Check if user is admin
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        error: 'Not authorized to create device data'
-      });
-    }
-
     const { deviceId, temperature, humidity } = req.body;
 
     // Validate required fields
@@ -100,14 +92,6 @@ exports.createData = async (req, res) => {
  */
 exports.deleteData = async (req, res) => {
   try {
-    // Check if user is admin
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        error: 'Not authorized to delete device data'
-      });
-    }
-
     const deviceData = await DeviceData.findById(req.params.id);
 
     if (!deviceData) {
