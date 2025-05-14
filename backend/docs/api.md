@@ -23,7 +23,7 @@ All API responses follow this format:
 }
 ```
 
-## Endpoints
+## Authentication Endpoints
 
 ### 1. User Registration
 Register a new user account.
@@ -127,6 +127,133 @@ Authorization: Bearer <jwt_token>
 - `401`: Not authorized, no token
 - `500`: Server error while fetching user data
 
+## Device Data Endpoints
+
+### 1. Get Latest Device Data
+Get the most recent device data entries (limited to 10).
+
+**Endpoint:** `GET /data/latest`
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "data_id",
+      "deviceId": "device001",
+      "temperature": 25.4,
+      "humidity": 48.7,
+      "timestamp": "2023-05-25T10:30:00.000Z",
+      "createdAt": "2023-05-25T10:30:00.000Z",
+      "updatedAt": "2023-05-25T10:30:00.000Z"
+    },
+    // More data entries...
+  ]
+}
+```
+
+**Error Responses:**
+- `500`: Server error while fetching device data
+
+### 2. Get Device Data by Device ID
+Get data entries for a specific device (limited to 20).
+
+**Endpoint:** `GET /data/device/:deviceId`
+
+**URL Parameters:**
+- `deviceId`: ID of the device to get data for
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "data_id",
+      "deviceId": "device001",
+      "temperature": 25.4,
+      "humidity": 48.7,
+      "timestamp": "2023-05-25T10:30:00.000Z",
+      "createdAt": "2023-05-25T10:30:00.000Z",
+      "updatedAt": "2023-05-25T10:30:00.000Z"
+    },
+    // More data entries...
+  ]
+}
+```
+
+**Error Responses:**
+- `500`: Server error while fetching device data
+
+### 3. Create Device Data
+Add a new device data entry (admin only).
+
+**Endpoint:** `POST /data`
+
+**Headers Required:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Request Body:**
+```json
+{
+  "deviceId": "device001",
+  "temperature": 25.4,
+  "humidity": 48.7
+}
+```
+
+**Success Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "data_id",
+    "deviceId": "device001",
+    "temperature": 25.4,
+    "humidity": 48.7,
+    "timestamp": "2023-05-25T10:30:00.000Z",
+    "createdAt": "2023-05-25T10:30:00.000Z",
+    "updatedAt": "2023-05-25T10:30:00.000Z"
+  }
+}
+```
+
+**Error Responses:**
+- `400`: Missing required fields
+- `401`: Not authorized, token failed
+- `403`: Not authorized, admin role required
+- `500`: Server error while creating device data
+
+### 4. Delete Device Data
+Delete a device data entry by ID (admin only).
+
+**Endpoint:** `DELETE /data/:id`
+
+**Headers Required:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**URL Parameters:**
+- `id`: ID of the device data entry to delete
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "data": {}
+}
+```
+
+**Error Responses:**
+- `401`: Not authorized, token failed
+- `403`: Not authorized, admin role required
+- `404`: Device data not found
+- `500`: Server error while deleting device data
+
 ## Authentication
 
 ### JWT Token
@@ -186,4 +313,7 @@ npm run dev
 
 # Production mode
 npm start
+
+# Seed test data
+npm run seed
 ```

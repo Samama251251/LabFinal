@@ -31,6 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/auth', authLimiter, require('./routes/authRoutes'));
+app.use('/api/data', require('./routes/dataRoutes'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
