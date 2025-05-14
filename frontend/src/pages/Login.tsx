@@ -23,7 +23,7 @@ function Login({ setIsAuthenticated, setUserRole }: LoginProps) {
 
     try {
       const response = await login({ email, password })
-      
+
       if (!response.success || !response.data) {
         throw new Error(response.error || 'Login failed')
       }
@@ -33,7 +33,8 @@ function Login({ setIsAuthenticated, setUserRole }: LoginProps) {
       
       setIsAuthenticated(true)
       setUserRole(response.data.role)
-      navigate(response.data.role === 'admin' ? '/admin' : '/dashboard')
+      // Always redirect to dashboard regardless of role
+      navigate('/dashboard')
     } catch (err) {
       console.error('Login error:', err)
       setError(err instanceof Error ? err.message : 'Invalid email or password')
@@ -71,49 +72,49 @@ function Login({ setIsAuthenticated, setUserRole }: LoginProps) {
             <p className="text-base-content/60 text-center mt-2">Welcome back! Please login to your account.</p>
           </motion.div>
 
-          {error && (
+        {error && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="alert alert-error"
             >
-              <span>{error}</span>
+            <span>{error}</span>
             </motion.div>
-          )}
+        )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="form-control">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="form-control">
               <label className="label">
                 <span className="label-text font-medium">Email</span>
-              </label>
+            </label>
               <div className="relative">
                 <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/50" />
-                <input
-                  type="email"
-                  placeholder="Enter your email"
+            <input
+              type="email"
+              placeholder="Enter your email"
                   className="input input-bordered w-full pl-10 focus:input-primary transition-all duration-200"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
             </div>
 
-            <div className="form-control">
+          <div className="form-control">
               <label className="label">
                 <span className="label-text font-medium">Password</span>
-              </label>
+            </label>
               <div className="relative">
                 <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/50" />
-                <input
-                  type="password"
-                  placeholder="Enter your password"
+            <input
+              type="password"
+              placeholder="Enter your password"
                   className="input input-bordered w-full pl-10 focus:input-primary transition-all duration-200"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
             </div>
 
             <motion.button
@@ -127,23 +128,23 @@ function Login({ setIsAuthenticated, setUserRole }: LoginProps) {
             >
               {isLoading ? 'Logging in...' : 'Login'}
             </motion.button>
-          </form>
+        </form>
 
           <div className="divider text-base-content/60">OR</div>
 
-          <div className="text-center">
+        <div className="text-center">
             <p className="text-base-content/70">
-              Don't have an account?{' '}
+            Don't have an account?{' '}
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 className="link link-primary font-semibold hover:link-primary/80"
-                onClick={() => navigate('/signup')}
-              >
-                Sign up
+              onClick={() => navigate('/signup')}
+            >
+              Sign up
               </motion.button>
-            </p>
-          </div>
+          </p>
         </div>
+      </div>
       </motion.div>
     </motion.div>
   )

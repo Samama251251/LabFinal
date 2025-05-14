@@ -41,7 +41,8 @@ function Signup({ setIsAuthenticated, setUserRole }: SignupProps) {
 
       setIsAuthenticated(true)
       setUserRole(response.data.role)
-      navigate(response.data.role === 'admin' ? '/admin' : '/dashboard')
+      // Always redirect to dashboard regardless of role
+      navigate('/dashboard')
     } catch (err) {
       console.error('Signup error:', err)
       setError(err instanceof Error ? err.message : 'Failed to create account')
@@ -79,13 +80,13 @@ function Signup({ setIsAuthenticated, setUserRole }: SignupProps) {
             <p className="text-base-content/60 text-center mt-2">Create your account to get started</p>
           </motion.div>
 
-          {error && (
+        {error && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="alert alert-error"
             >
-              <span>{error}</span>
+            <span>{error}</span>
             </motion.div>
           )}
 
@@ -105,60 +106,60 @@ function Signup({ setIsAuthenticated, setUserRole }: SignupProps) {
                   required
                 />
               </div>
-            </div>
+          </div>
 
-            <div className="form-control">
-              <label className="label">
+          <div className="form-control">
+            <label className="label">
                 <span className="label-text font-medium">Email</span>
-              </label>
+            </label>
               <div className="relative">
                 <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/50" />
-                <input
-                  type="email"
-                  placeholder="Enter your email"
+            <input
+              type="email"
+              placeholder="Enter your email"
                   className="input input-bordered w-full pl-10 focus:input-primary transition-all duration-200"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
             </div>
 
-            <div className="form-control">
-              <label className="label">
+          <div className="form-control">
+            <label className="label">
                 <span className="label-text font-medium">Password</span>
-              </label>
+            </label>
               <div className="relative">
                 <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/50" />
-                <input
-                  type="password"
+            <input
+              type="password"
                   placeholder="Create a password"
                   className="input input-bordered w-full pl-10 focus:input-primary transition-all duration-200"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
               <label className="label">
                 <span className="label-text-alt text-base-content/60">Password must be at least 8 characters</span>
               </label>
             </div>
 
-            <div className="form-control">
-              <label className="label">
+          <div className="form-control">
+            <label className="label">
                 <span className="label-text font-medium">Confirm Password</span>
-              </label>
+            </label>
               <div className="relative">
                 <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/50" />
-                <input
-                  type="password"
-                  placeholder="Confirm your password"
+            <input
+              type="password"
+              placeholder="Confirm your password"
                   className="input input-bordered w-full pl-10 focus:input-primary transition-all duration-200"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-              </div>
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
             </div>
 
             <motion.button
@@ -172,23 +173,23 @@ function Signup({ setIsAuthenticated, setUserRole }: SignupProps) {
             >
               {isLoading ? 'Creating account...' : 'Sign Up'}
             </motion.button>
-          </form>
+        </form>
 
           <div className="divider text-base-content/60">OR</div>
 
-          <div className="text-center">
+        <div className="text-center">
             <p className="text-base-content/70">
-              Already have an account?{' '}
+            Already have an account?{' '}
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 className="link link-primary font-semibold hover:link-primary/80"
-                onClick={() => navigate('/login')}
-              >
-                Login
+              onClick={() => navigate('/login')}
+            >
+              Login
               </motion.button>
-            </p>
-          </div>
+          </p>
         </div>
+      </div>
       </motion.div>
     </motion.div>
   )
