@@ -4,6 +4,7 @@ import './App.css'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
+import AdminDashboard from './pages/AdminDashboard'
 import { DeviceDataProvider } from './context/DeviceDataContext'
 import { getCurrentUser } from './services/authService'
 
@@ -40,6 +41,12 @@ function App() {
     checkAuth()
   }, [])
 
+  // Function to determine where to redirect after login
+  const getRedirectPath = () => {
+    if (!isAuthenticated) return '/login'
+    return userRole === 'admin' ? '/admin' : '/dashboard'
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-base-100">
@@ -54,20 +61,29 @@ function App() {
         <Routes>
           <Route path="/login" element={
             isAuthenticated 
-              ? <Navigate to="/dashboard" replace /> 
+              ? <Navigate to={getRedirectPath()} replace /> 
               : <Login setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />
           } />
           <Route path="/signup" element={
             isAuthenticated 
-              ? <Navigate to="/dashboard" replace /> 
+              ? <Navigate to={getRedirectPath()} replace /> 
               : <Signup setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />
           } />
           <Route path="/dashboard" element={
             isAuthenticated 
-              ? <DeviceDataProvider><Dashboard userRole={userRole} /></DeviceDataProvider>
+              ? userRole === 'admin'
+                ? <Navigate to="/admin" replace />
+                : <DeviceDataProvider><Dashboard userRole={userRole} setIsAuthenticated={setIsAuthenticated} /></DeviceDataProvider>
               : <Navigate to="/login" replace />
           } />
-          <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
+          <Route path="/admin" element={
+            isAuthenticated 
+              ? userRole === 'admin'
+                ? <AdminDashboard setIsAuthenticated={setIsAuthenticated} />
+                : <Navigate to="/dashboard" replace />
+              : <Navigate to="/login" replace />
+          } />
+          <Route path="/" element={<Navigate to={getRedirectPath()} replace />} />
         </Routes>
       </div>
     </Router>

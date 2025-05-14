@@ -1,17 +1,28 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FiThermometer, FiDroplet, FiRefreshCw, FiClock, FiActivity, FiLogOut } from 'react-icons/fi'
 import { useDeviceData } from '../context/DeviceDataContext'
+import DeviceChart from '../components/DeviceChart'
+import DeviceFilter from '../components/DeviceFilter'
+import LiveStatusIndicator from '../components/LiveStatusIndicator'
 
 interface DashboardProps {
   userRole: 'admin' | 'user' | null
+  setIsAuthenticated: (value: boolean) => void
 }
 
-function Dashboard({ userRole }: DashboardProps) {
+function Dashboard({ userRole, setIsAuthenticated }: DashboardProps) {
   const { deviceData, loading, error, refreshData } = useDeviceData()
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null)
   const navigate = useNavigate()
+
+  // Filter data based on selected device
+  const filteredData = useMemo(() => {
+    if (!selectedDeviceId) return deviceData
+    return deviceData.filter(item => item.deviceId === selectedDeviceId)
+  }, [deviceData, selectedDeviceId])
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
@@ -22,9 +33,10 @@ function Dashboard({ userRole }: DashboardProps) {
   const handleLogout = () => {
     // Clear authentication token
     localStorage.removeItem('token')
+    // Update authentication state
+    setIsAuthenticated(false)
     // Redirect to login page
     navigate('/login')
-    // Note: App component will handle setting isAuthenticated to false
   }
 
   const formatDate = (dateString: string) => {
@@ -58,6 +70,9 @@ function Dashboard({ userRole }: DashboardProps) {
           <h1 className="text-2xl font-bold text-primary">IoT Dashboard</h1>
           <div className="flex items-center gap-4">
             <span className="text-base-content/70">Role: {userRole}</span>
+            {deviceData.length > 0 && (
+              <LiveStatusIndicator lastUpdated={deviceData[0].timestamp} />
+            )}
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -98,8 +113,15 @@ function Dashboard({ userRole }: DashboardProps) {
           </div>
         ) : (
           <>
+            <div className="flex justify-end mb-4">
+              <DeviceFilter 
+                data={deviceData} 
+                onFilterChange={setSelectedDeviceId} 
+              />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {deviceData.length > 0 && (
+              {filteredData.length > 0 && (
                 <>
                   <motion.div
                     variants={itemVariants}
@@ -110,17 +132,20 @@ function Dashboard({ userRole }: DashboardProps) {
                     <div className="card-body">
                       <h2 className="card-title text-base-content flex items-center gap-2">
                         <FiThermometer className="text-primary text-2xl" />
-                        Latest Temperature
+                        Temperature
                       </h2>
-                      <div className="flex flex-col items-center justify-center h-32">
+                      <div className="flex flex-col items-center h-32 mb-4">
                         <p className="text-5xl font-bold text-primary mt-2">
-                          {deviceData[0].temperature}°C
+                          {filteredData[0].temperature}°C
                         </p>
                         <p className="text-base-content/60 mt-2">
                           <FiClock className="inline mr-1" />
-                          {formatDate(deviceData[0].timestamp)}
+                          {formatDate(filteredData[0].timestamp)}
                         </p>
                       </div>
+                      
+                      {/* Temperature Chart */}
+                      <DeviceChart data={filteredData} type="temperature" />
                     </div>
                   </motion.div>
 
@@ -133,17 +158,20 @@ function Dashboard({ userRole }: DashboardProps) {
                     <div className="card-body">
                       <h2 className="card-title text-base-content flex items-center gap-2">
                         <FiDroplet className="text-info text-2xl" />
-                        Latest Humidity
+                        Humidity
                       </h2>
-                      <div className="flex flex-col items-center justify-center h-32">
+                      <div className="flex flex-col items-center h-32 mb-4">
                         <p className="text-5xl font-bold text-info mt-2">
-                          {deviceData[0].humidity}%
+                          {filteredData[0].humidity}%
                         </p>
                         <p className="text-base-content/60 mt-2">
                           <FiClock className="inline mr-1" />
-                          {formatDate(deviceData[0].timestamp)}
+                          {formatDate(filteredData[0].timestamp)}
                         </p>
                       </div>
+                      
+                      {/* Humidity Chart */}
+                      <DeviceChart data={filteredData} type="humidity" />
                     </div>
                   </motion.div>
                 </>
@@ -166,10 +194,11 @@ function Dashboard({ userRole }: DashboardProps) {
                         <th className="text-base-content">Temperature</th>
                         <th className="text-base-content">Humidity</th>
                         <th className="text-base-content">Timestamp</th>
+                        <th className="text-base-content">Status</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {deviceData.map((device) => (
+                      {filteredData.map((device) => (
                         <motion.tr
                           key={device._id}
                           variants={itemVariants}
@@ -189,6 +218,9 @@ function Dashboard({ userRole }: DashboardProps) {
                             </span>
                           </td>
                           <td className="text-base-content/80">{formatDate(device.timestamp)}</td>
+                          <td className="text-base-content/80">
+                            <LiveStatusIndicator lastUpdated={device.timestamp} />
+                          </td>
                         </motion.tr>
                       ))}
                     </tbody>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FiLock, FiMail, FiUser } from 'react-icons/fi'
+import { FiLock, FiMail, FiUser, FiUserCheck } from 'react-icons/fi'
 import { signup } from '../services/authService'
 
 interface SignupProps {
@@ -14,6 +14,7 @@ function Signup({ setIsAuthenticated, setUserRole }: SignupProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [role, setRole] = useState<'user' | 'admin'>('user')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
@@ -30,7 +31,8 @@ function Signup({ setIsAuthenticated, setUserRole }: SignupProps) {
     setIsLoading(true)
 
     try {
-      const response = await signup({ name, email, password })
+      // @ts-expect-error - Include role in the request
+      const response = await signup({ name, email, password, role })
 
       if (!response.success || !response.data) {
         throw new Error(response.error || 'Signup failed')
@@ -41,8 +43,13 @@ function Signup({ setIsAuthenticated, setUserRole }: SignupProps) {
 
       setIsAuthenticated(true)
       setUserRole(response.data.role)
-      // Always redirect to dashboard regardless of role
-      navigate('/dashboard')
+      
+      // Redirect based on role
+      if (response.data.role === 'admin') {
+        navigate('/admin')
+      } else {
+        navigate('/dashboard')
+      }
     } catch (err) {
       console.error('Signup error:', err)
       setError(err instanceof Error ? err.message : 'Failed to create account')
@@ -141,7 +148,7 @@ function Signup({ setIsAuthenticated, setUserRole }: SignupProps) {
             />
           </div>
               <label className="label">
-                <span className="label-text-alt text-base-content/60">Password must be at least 8 characters</span>
+                <span className="label-text-alt text-base-content/60">Password must be at least 6 characters</span>
               </label>
             </div>
 
@@ -160,6 +167,45 @@ function Signup({ setIsAuthenticated, setUserRole }: SignupProps) {
               required
             />
           </div>
+            </div>
+
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-medium">Account Type</span>
+              </label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    className="radio radio-primary"
+                    name="role"
+                    checked={role === 'user'}
+                    onChange={() => setRole('user')}
+                  />
+                  <span className="flex items-center gap-1">
+                    <FiUser className="text-base-content/70" />
+                    User
+                  </span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    className="radio radio-secondary"
+                    name="role"
+                    checked={role === 'admin'}
+                    onChange={() => setRole('admin')}
+                  />
+                  <span className="flex items-center gap-1">
+                    <FiUserCheck className="text-base-content/70" />
+                    Admin
+                  </span>
+                </label>
+              </div>
+              <label className="label">
+                <span className="label-text-alt text-base-content/60">
+                  Admin accounts can add device data
+                </span>
+              </label>
             </div>
 
             <motion.button

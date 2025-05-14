@@ -33,8 +33,13 @@ function Login({ setIsAuthenticated, setUserRole }: LoginProps) {
       
       setIsAuthenticated(true)
       setUserRole(response.data.role)
-      // Always redirect to dashboard regardless of role
-      navigate('/dashboard')
+      
+      // Redirect based on role
+      if (response.data.role === 'admin') {
+        navigate('/admin')
+      } else {
+        navigate('/dashboard')
+      }
     } catch (err) {
       console.error('Login error:', err)
       setError(err instanceof Error ? err.message : 'Invalid email or password')
@@ -129,6 +134,13 @@ function Login({ setIsAuthenticated, setUserRole }: LoginProps) {
               {isLoading ? 'Logging in...' : 'Login'}
             </motion.button>
         </form>
+
+          <div className="text-center mb-2">
+            <p className="text-sm text-base-content/70">
+              User accounts have standard dashboard access.<br />
+              Admin accounts can add device data.
+            </p>
+          </div>
 
           <div className="divider text-base-content/60">OR</div>
 
