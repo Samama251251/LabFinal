@@ -1,51 +1,57 @@
-import { useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { FiThermometer, FiDroplet, FiRefreshCw, FiClock, FiActivity, FiLogOut } from 'react-icons/fi'
-import { useDeviceData } from '../context/DeviceDataContext'
-import DeviceChart from '../components/DeviceChart'
-import DeviceFilter from '../components/DeviceFilter'
-import LiveStatusIndicator from '../components/LiveStatusIndicator'
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  FiThermometer,
+  FiDroplet,
+  FiRefreshCw,
+  FiClock,
+  FiActivity,
+  FiLogOut,
+} from "react-icons/fi";
+import { useDeviceData } from "../context/DeviceDataContext";
+import DeviceChart from "../components/DeviceChart";
+import DeviceFilter from "../components/DeviceFilter";
+import LiveStatusIndicator from "../components/LiveStatusIndicator";
 
 interface DashboardProps {
-  userRole: 'admin' | 'user' | null
-  setIsAuthenticated: (value: boolean) => void
+  userRole: "admin" | "user" | null;
+  setIsAuthenticated: (value: boolean) => void;
 }
 
 function Dashboard({ userRole, setIsAuthenticated }: DashboardProps) {
-  const { deviceData, loading, error, refreshData } = useDeviceData()
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null)
-  const navigate = useNavigate()
-
-  // Filter data based on selected device
-  const filteredData = useMemo(() => {
-    if (!selectedDeviceId) return deviceData
-    return deviceData.filter(item => item.deviceId === selectedDeviceId)
-  }, [deviceData, selectedDeviceId])
+  const { deviceData, loading, error, refreshData } = useDeviceData();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleRefresh = async () => {
-    setIsRefreshing(true)
-    await refreshData()
-    setTimeout(() => setIsRefreshing(false), 500) // Visual feedback
-  }
+    setIsRefreshing(true);
+    await refreshData(selectedDeviceId || undefined);
+    setTimeout(() => setIsRefreshing(false), 500); // Visual feedback
+  };
+
+  const handleDeviceFilter = async (deviceId: string | null) => {
+    setSelectedDeviceId(deviceId);
+    await refreshData(deviceId || undefined);
+  };
 
   const handleLogout = () => {
     // Clear authentication token
-    localStorage.removeItem('token')
+    localStorage.removeItem("token");
     // Update authentication state
-    setIsAuthenticated(false)
+    setIsAuthenticated(false);
     // Redirect to login page
-    navigate('/login')
-  }
+    navigate("/login");
+  };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return new Intl.DateTimeFormat('en-US', {
-      dateStyle: 'medium',
-      timeStyle: 'short'
-    }).format(date)
-  }
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-US", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(date);
+  };
 
   // Animation variants
   const containerVariants = {
@@ -53,15 +59,15 @@ function Dashboard({ userRole, setIsAuthenticated }: DashboardProps) {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
-  }
+        staggerChildren: 0.1,
+      },
+    },
+  };
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1 }
-  }
+    visible: { y: 0, opacity: 1 },
+  };
 
   return (
     <div className="min-h-screen bg-base-100">
@@ -76,7 +82,9 @@ function Dashboard({ userRole, setIsAuthenticated }: DashboardProps) {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className={`btn btn-circle btn-ghost ${isRefreshing ? 'animate-spin' : ''}`}
+              className={`btn btn-circle btn-ghost ${
+                isRefreshing ? "animate-spin" : ""
+              }`}
               onClick={handleRefresh}
               aria-label="Refresh data"
             >
@@ -109,19 +117,15 @@ function Dashboard({ userRole, setIsAuthenticated }: DashboardProps) {
         ) : deviceData.length === 0 ? (
           <div className="alert alert-info">
             <FiActivity className="w-6 h-6" />
-            <span>No device data available. Please add some data from the admin console.</span>
+            <span>
+              No device data available. Please add some data from the admin
+              console.
+            </span>
           </div>
         ) : (
           <>
-            <div className="flex justify-end mb-4">
-              <DeviceFilter 
-                data={deviceData} 
-                onFilterChange={setSelectedDeviceId} 
-              />
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {filteredData.length > 0 && (
+              {deviceData.length > 0 && (
                 <>
                   <motion.div
                     variants={itemVariants}
@@ -136,16 +140,16 @@ function Dashboard({ userRole, setIsAuthenticated }: DashboardProps) {
                       </h2>
                       <div className="flex flex-col items-center h-32 mb-4">
                         <p className="text-5xl font-bold text-primary mt-2">
-                          {filteredData[0].temperature}°C
+                          {deviceData[0].temperature}°C
                         </p>
                         <p className="text-base-content/60 mt-2">
                           <FiClock className="inline mr-1" />
-                          {formatDate(filteredData[0].timestamp)}
+                          {formatDate(deviceData[0].timestamp)}
                         </p>
                       </div>
-                      
+
                       {/* Temperature Chart */}
-                      <DeviceChart data={filteredData} type="temperature" />
+                      <DeviceChart data={deviceData} type="temperature" />
                     </div>
                   </motion.div>
 
@@ -162,16 +166,16 @@ function Dashboard({ userRole, setIsAuthenticated }: DashboardProps) {
                       </h2>
                       <div className="flex flex-col items-center h-32 mb-4">
                         <p className="text-5xl font-bold text-info mt-2">
-                          {filteredData[0].humidity}%
+                          {deviceData[0].humidity}%
                         </p>
                         <p className="text-base-content/60 mt-2">
                           <FiClock className="inline mr-1" />
-                          {formatDate(filteredData[0].timestamp)}
+                          {formatDate(deviceData[0].timestamp)}
                         </p>
                       </div>
-                      
+
                       {/* Humidity Chart */}
-                      <DeviceChart data={filteredData} type="humidity" />
+                      <DeviceChart data={deviceData} type="humidity" />
                     </div>
                   </motion.div>
                 </>
@@ -185,7 +189,15 @@ function Dashboard({ userRole, setIsAuthenticated }: DashboardProps) {
               className="card bg-base-100 shadow-xl border border-base-300"
             >
               <div className="card-body">
-                <h2 className="card-title text-base-content mb-4">Device Data History</h2>
+                <h2 className="card-title text-base-content mb-4">
+                  Device Data History
+                </h2>
+                <div className="flex justify-end mb-4">
+                  <DeviceFilter
+                    data={deviceData}
+                    onFilterChange={handleDeviceFilter}
+                  />
+                </div>
                 <div className="overflow-x-auto">
                   <table className="table w-full">
                     <thead className="bg-base-200">
@@ -198,13 +210,15 @@ function Dashboard({ userRole, setIsAuthenticated }: DashboardProps) {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredData.map((device) => (
+                      {deviceData.map((device) => (
                         <motion.tr
                           key={device._id}
                           variants={itemVariants}
                           className="hover:bg-base-200"
                         >
-                          <td className="text-base-content/80">{device.deviceId}</td>
+                          <td className="text-base-content/80">
+                            {device.deviceId}
+                          </td>
                           <td className="text-base-content/80">
                             <span className="flex items-center">
                               <FiThermometer className="text-primary mr-2" />
@@ -217,9 +231,13 @@ function Dashboard({ userRole, setIsAuthenticated }: DashboardProps) {
                               {device.humidity}%
                             </span>
                           </td>
-                          <td className="text-base-content/80">{formatDate(device.timestamp)}</td>
                           <td className="text-base-content/80">
-                            <LiveStatusIndicator lastUpdated={device.timestamp} />
+                            {formatDate(device.timestamp)}
+                          </td>
+                          <td className="text-base-content/80">
+                            <LiveStatusIndicator
+                              lastUpdated={device.timestamp}
+                            />
                           </td>
                         </motion.tr>
                       ))}
@@ -232,7 +250,7 @@ function Dashboard({ userRole, setIsAuthenticated }: DashboardProps) {
         )}
       </main>
     </div>
-  )
+  );
 }
 
-export default Dashboard 
+export default Dashboard;

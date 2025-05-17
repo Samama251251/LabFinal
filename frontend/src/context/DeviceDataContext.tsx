@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import type { ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect } from "react";
+import type { ReactNode } from "react";
 
 interface DeviceData {
   _id: string;
@@ -13,15 +13,17 @@ interface DeviceDataContextType {
   deviceData: DeviceData[];
   loading: boolean;
   error: string | null;
-  refreshData: () => Promise<void>;
+  refreshData: (deviceId?: string) => Promise<void>;
 }
 
-const DeviceDataContext = createContext<DeviceDataContextType | undefined>(undefined);
+const DeviceDataContext = createContext<DeviceDataContextType | undefined>(
+  undefined
+);
 
 export const useDeviceData = () => {
   const context = useContext(DeviceDataContext);
   if (context === undefined) {
-    throw new Error('useDeviceData must be used within a DeviceDataProvider');
+    throw new Error("useDeviceData must be used within a DeviceDataProvider");
   }
   return context;
 };
@@ -34,26 +36,34 @@ export const DeviceDataProvider = ({ children }: DeviceDataProviderProps) => {
   const [deviceData, setDeviceData] = useState<DeviceData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = async (deviceId?: string) => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/data/latest');
-      
+      const url = deviceId
+        ? `http://localhost:5000/api/data/device/${deviceId}`
+        : "http://localhost:5000/api/data/latest";
+
+      const response = await fetch(url);
+
       if (!response.ok) {
-        throw new Error('Failed to fetch data');
+        throw new Error("Failed to fetch data");
       }
-      
+
       const result = await response.json();
-      
+
       if (result.success && result.data) {
         setDeviceData(result.data);
+        if (deviceId) {
+          setSelectedDeviceId(deviceId);
+        }
       } else {
-        throw new Error(result.error || 'Failed to fetch data');
+        throw new Error(result.error || "Failed to fetch data");
       }
     } catch (err) {
-      console.error('Error fetching device data:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error occurred');
+      console.error("Error fetching device data:", err);
+      setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
       setLoading(false);
     }
@@ -67,17 +77,17 @@ export const DeviceDataProvider = ({ children }: DeviceDataProviderProps) => {
   // Polling for data every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      fetchData();
+      fetchData(selectedDeviceId || undefined);
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [selectedDeviceId]);
 
   const value = {
     deviceData,
     loading,
     error,
-    refreshData: fetchData
+    refreshData: fetchData,
   };
 
   return (
@@ -85,4 +95,4 @@ export const DeviceDataProvider = ({ children }: DeviceDataProviderProps) => {
       {children}
     </DeviceDataContext.Provider>
   );
-}; 
+};
